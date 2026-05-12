@@ -1,4 +1,4 @@
-package com.ws101.iyonglastname.ecommerceapi.model;
+package com.ws101.Ampuan.Comia.EcommerceApi.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

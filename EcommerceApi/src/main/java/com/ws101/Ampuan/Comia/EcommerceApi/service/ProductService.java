@@ -1,6 +1,6 @@
 package com.ws101.Ampuan.Comia.EcommerceApi.service;
 
-import com.ws101.iyonglastname.ecommerceapi.model.Product;
+import com.ws101.Ampuan.Comia.EcommerceApi.model.Product;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;

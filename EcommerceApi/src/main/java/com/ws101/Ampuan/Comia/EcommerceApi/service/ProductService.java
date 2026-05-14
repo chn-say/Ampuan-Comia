@@ -7,13 +7,11 @@ import java.util.List;
 
 @Service
 public class ProductService {
-    // Temporary list (mock database)
     private List<Product> products = new ArrayList<>();
 
     public ProductService() {
-        // sample data
-        products.add(new Product(1L, "Laptop", "High-end gaming laptop", 75000.0, "Electronics", 10, "url-to-image"));
-        products.add(new Product(2L, "Mouse", "Wireless optical mouse", 1500.0, "Electronics", 50, "url-to-image"));
+        products.add(new Product(1L, "shoes", "comfortable to wear", 450.0, "shoes", 10, "url-to-image"));
+        products.add(new Product(2L, "sandals", "aesthetic for women", 300.0, "shoes", 50, "url-to-image"));
     }
 
     public List<Product> getAllProducts() {

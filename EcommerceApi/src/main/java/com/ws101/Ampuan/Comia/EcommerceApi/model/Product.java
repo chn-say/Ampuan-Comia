@@ -1,32 +1,36 @@
 package com.ws101.Ampuan.Comia.EcommerceApi.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.*;
 
+/**
+ * Entity class representing a Product in the database.
+ */
+@Entity
+@Table(name = "products")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
+
+    @Id // Primary Key
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment sa MySQL
     private Long id;
 
-    @NotBlank(message = "Product name is required")
-    @Size(min = 2, message = "Name must be at least 2 characters")
+    @NotBlank(message = "Name is required")
     private String name;
 
     private String description;
 
-    @NotNull(message = "Price is required")
-    @Positive(message = "Price must be a positive number")
-    private Double price;
+    @Positive(message = "Price must be greater than zero")
+    private double price;
 
     @NotBlank(message = "Category is required")
     private String category;
 
-    @NotNull(message = "Stock is required")
-    @Min(value = 0, message = "Stock quantity must be non-negative")
-    private Integer stock;
+    @Min(value = 0, message = "Stock cannot be negative")
+    private int stock;
 
     private String imageUrl;
 }

@@ -1,5 +1,6 @@
 package com.ws101.Ampuan.Comia.EcommerceApi.controller;
 
+import jakarta.validation.Valid;
 import com.ws101.Ampuan.Comia.EcommerceApi.model.Product;
 import com.ws101.Ampuan.Comia.EcommerceApi.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,15 +46,17 @@ public class ProductController {
     }
 
     // POST /api/v1/products - Returns 201 Created (Tugma sa Task 5.1)
+    // Sa loob ng ProductController.java
+
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
+        // Ang @Valid ang magti-trigger ng rules sa Product class
         Product created = productService.createProduct(product);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // PUT /api/v1/products/{id} - Returns 200 OK or 404 Not Found
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody Product updatedProduct) {
         return productService.updateProduct(id, updatedProduct)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

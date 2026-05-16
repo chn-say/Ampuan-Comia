@@ -20,7 +20,7 @@ function displayProducts(products) {
     products.forEach(product => {
         const card = `
             <div class="product-card">
-                <img src="${product.imageUrl || 'https://via.placeholder.com/200'}" alt="${product.name}">
+              <img.src = product.imageUrl; || 'https://via.placeholder.com/200'}" alt="${product.name}">
                 <p class="category">${product.category}</p>
                 <h3>${product.name}</h3>
                 <p>${product.description}</p>

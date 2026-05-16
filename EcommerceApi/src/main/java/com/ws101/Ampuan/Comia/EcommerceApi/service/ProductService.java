@@ -26,6 +26,10 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
+
     public Optional<Product> updateProduct(Long id, Product updatedProduct) {
         return productRepository.findById(id).map(existingProduct -> {
             existingProduct.setName(updatedProduct.getName());
@@ -47,9 +51,15 @@ public class ProductService {
     }
 
     public List<Product> filterProducts(String category, Double maxPrice, String name) {
-        if (category != null) return productRepository.findByCategoryContainingIgnoreCase(category);
+        // Binago para tumugma sa eksaktong Method Naming ng Task 3 (Tinanggal ang ContainingIgnoreCase)
+        if (category != null) return productRepository.findByCategoryName(category);
         if (maxPrice != null) return productRepository.findByPriceLessThanEqual(maxPrice);
         if (name != null) return productRepository.findByNameContainingIgnoreCase(name);
         return productRepository.findAll();
+    }
+
+    // Idinagdag para sa Task 3: Gumagamit ng Custom @Query JPQL filter para sa Price Range
+    public List<Product> getProductsByPriceRange(Double min, Double max) {
+        return productRepository.findProductsByPriceRange(min, max);
     }
 }

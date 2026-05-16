@@ -1,32 +1,46 @@
 package com.ws101.Ampuan.Comia.EcommerceApi.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.*;
 
+/**
+ * Entity class representing a Product.
+ * Many products belong to one category (Many-to-One).
+ */
+@Entity
+@Table(name = "products")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Product name is required")
-    @Size(min = 2, message = "Name must be at least 2 characters")
+    @NotBlank(message = "Name is required")
     private String name;
 
     private String description;
 
-    @NotNull(message = "Price is required")
-    @Positive(message = "Price must be a positive number")
-    private Double price;
+    @Positive(message = "Price must be greater than zero")
+    private double price;
 
-    @NotBlank(message = "Category is required")
-    private String category;
+    @Min(value = 0, message = "Stock cannot be negative")
+    private int stock;
 
-    @NotNull(message = "Stock is required")
-    @Min(value = 0, message = "Stock quantity must be non-negative")
-    private Integer stock;
-
+    @Column(name = "image_url")
     private String imageUrl;
+
+    // Isang beses lang dapat ito nakadeklara at may tamang @JsonBackReference annotation
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 }

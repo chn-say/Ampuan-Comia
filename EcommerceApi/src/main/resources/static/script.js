@@ -27,7 +27,7 @@ async function handleLogout() {
     }
 }
 
-// Ang iyong orihinal na functional product logic na kumukuha ng data mula sa MySQL (Task 8)
+// TAMA: Ang iyong orihinal na logic na nilagyan ng Task 7 Interceptor Guards (401/403 Handling)
 async function fetchProducts() {
     const container = document.getElementById("product-container");
     if (!container) {
@@ -36,6 +36,19 @@ async function fetchProducts() {
 
     try {
         const response = await fetch(API_URL);
+
+        // Task 7 Rule 1: Intercept 401 Unauthorized (Hindi pa naka-login)
+        if (response.status === 401) {
+            alert("Access Denied: You must log in first to view the products!");
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Task 7 Rule 2: Intercept 403 Forbidden (Naka-login pero maling access level/role)
+        if (response.status === 403) {
+            alert("Access Denied: You do not have the required role to view this resource.");
+            return;
+        }
 
         if (!response.ok) {
             throw new Error(`Server responded with status: ${response.status} (${response.statusText})`);
@@ -60,6 +73,38 @@ async function fetchProducts() {
                 <small style="color: gray;">Details: ${error.message}</small>
             </div>
         `;
+    }
+}
+
+// Reusable custom fetch wrapper kung sakaling magdadagdag ka ng buttons para sa POST/DELETE requests
+async function secureFetch(url, options = {}) {
+    try {
+        // Awtomatikong isama ang CSRF Token sa mutative operations kung meron nito sa cookie file
+        const csrfToken = getCookie("XSRF-TOKEN");
+        if (csrfToken && (!options.method || options.method !== "GET")) {
+            options.headers = {
+                ...options.headers,
+                "X-XSRF-TOKEN": csrfToken
+            };
+        }
+
+        const response = await fetch(url, options);
+
+        if (response.status === 401) {
+            alert("Session expired or unauthorized. Redirecting to login...");
+            window.location.href = "login.html";
+            return null;
+        }
+
+        if (response.status === 403) {
+            alert("Access Denied: You do not have permission to perform this action.");
+            return null;
+        }
+
+        return response;
+    } catch (error) {
+        console.error("Secure fetch integration failure:", error);
+        throw error;
     }
 }
 

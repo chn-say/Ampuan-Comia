@@ -1,17 +1,32 @@
 /**
- * Task 7: Global Reusable Fetch Wrapper & Route Guard
- * Pinoprotektahan nito ang mga sensitibong HTML routes laban sa 401/403 security states.
+ * Task 7: Global Reusable Fetch Wrapper & Route Guard (JWT Stateless Version)
+ * Pinoprotektahan nito ang mga sensitibong HTML routes laban sa 401/403 security states gamit ang Bearer Token.
  */
 
 // 1. Intercept at i-check kung valid ang state ng session bago mag-render ng UI
 async function checkAuthAndProtectPage() {
+    // Kunin ang token mula sa Local Storage
+    const token = localStorage.getItem("jwt_token");
+
+    // Kung wala man lang token sa local engine, huwag nang patakbuhin ang fetch, i-redirect na agad (Mabilis na Client-Side Guard)
+    if (!token) {
+        alert("Session missing or expired! Redirecting to login...");
+        window.location.href = "login.html";
+        return;
+    }
+
     try {
-        // Gumawa ng mabilisang tawag sa iyong check status endpoint
-        // Kung walang session status endpoint, pwede ring gamitin ang checkout initialization api fetch
-        const response = await fetch("http://localhost:8080/api/v1/orders", { method: "GET" });
+        // Gumawa ng mabilisang tawag sa iyong check status endpoint kasama ang Authorization Header
+        const response = await fetch("http://localhost:8080/api/v1/orders", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}` // NAPAKAHALAGA: Dito bineverify ng filter ang identity mo
+            }
+        });
 
         if (response.status === 401) {
             // Requirement 2: If 401, redirect to the login page
+            localStorage.removeItem("jwt_token"); // Linisin ang sirang token
             alert("Session expired or unauthorized! Redirecting to login...");
             window.location.href = "login.html";
         } else if (response.status === 403) {
@@ -30,12 +45,23 @@ async function checkAuthAndProtectPage() {
     }
 }
 
-// 2. Custom Wrapper para sa ordinaryong functional actions (para sa mga forms at table tables)
+// 2. Custom Wrapper para sa ordinaryong functional actions (para sa mga forms, product tables, at pag-add ng data)
 async function secureFetch(url, options = {}) {
+    const token = localStorage.getItem("jwt_token");
+
+    // Tiyakin na may 'headers' object ang options parameters
+    options.headers = options.headers || {};
+
+    // Kung may token na naka-save, awtomatikong isaksak ang Bearer footprint sa headers metadata
+    if (token) {
+        options.headers["Authorization"] = `Bearer ${token}`; // dynamic payload formatting inject
+    }
+
     try {
         const response = await fetch(url, options);
 
         if (response.status === 401) {
+            localStorage.removeItem("jwt_token"); // Linisin ang invalid token profile
             alert("You must log in first!");
             window.location.href = "login.html";
             return null;

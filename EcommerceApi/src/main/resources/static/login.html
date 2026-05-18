@@ -20,19 +20,78 @@
 <div class="auth-container">
     <h2>Store Login</h2>
 
-    <form action="http://localhost:8080/login" method="POST">
+    <form id="loginForm">
         <div class="form-group">
             <label>Username</label>
-            <input type="text" name="username" required>
+            <input type="text" id="username" name="username" required>
         </div>
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" required>
+            <input type="password" id="password" name="password" required>
         </div>
         <button type="submit" class="auth-btn">Sign In</button>
     </form>
 
+    <p id="message" class="message"></p>
+
     <p style="margin-top: 15px; font-size: 14px;">Don't have an account? <a href="register.html">Register here</a></p>
 </div>
+
+<script>
+    // Helper function para basahin ang XSRF-TOKEN cookie na ibibigay ng Spring Security
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Harangin ang default form redirect
+
+        const messageElement = document.getElementById('message');
+        messageElement.textContent = "";
+
+        try {
+            // 1. Ayon sa Task 6: Gumawa ng GET request muna para ma-retrieve ang CSRF cookie
+            await fetch('http://localhost:8080/login', { method: 'GET' });
+
+            const csrfToken = getCookie('XSRF-TOKEN'); // Kunin ang bagong token mula sa cookie storage
+
+            // I-package ang login data gamit ang URLSearchParams para sa standard form content-type
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+
+            // 2. I-POST ang credentials kasama ang required CSRF header token
+            const response = await fetch('http://localhost:8080/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-XSRF-TOKEN': csrfToken // Napakahalagang header security line!
+                },
+                body: formData.toString()
+            });
+
+            if (response.redirected || response.ok) {
+                // Pag pumasok, dalahin sa home page ng sapatos
+                window.location.href = 'index.html';
+            } else {
+                messageElement.textContent = "Invalid username or password.";
+            }
+        } catch (error) {
+            messageElement.textContent = "An error occurred. Make sure your backend server is running.";
+            console.error("Fetch integration error:", error);
+        }
+    });
+</script>
 </body>
 </html>

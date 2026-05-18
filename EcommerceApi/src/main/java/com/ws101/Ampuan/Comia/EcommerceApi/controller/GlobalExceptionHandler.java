@@ -9,24 +9,31 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // TAMA: Idinagdag para saluhin ang mga Bean Validation (@Valid) errors mula sa DTOs!
+    // PINAGANDANG VALIDATION HANDLER: May timestamp at structured error map ayon sa Task 5!
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, Object> response = new HashMap<>();
         Map<String, String> errors = new HashMap<>();
 
+        // Kukunin ang field components at ang custom validation messages natin
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
 
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        response.put("timestamp", LocalDateTime.now().toString()); // Requirement: Magbalik ng timestamp
+        response.put("status", HttpStatus.BAD_REQUEST.value());    // Status 400 Bad Request
+        response.put("errors", errors);                             // Detalyadong listahan ng violations
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)

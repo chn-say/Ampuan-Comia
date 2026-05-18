@@ -1,8 +1,10 @@
 package com.ws101.Ampuan.Comia.EcommerceApi.controller;
 
+import com.ws101.Ampuan.Comia.EcommerceApi.dto.RegisterUserDto;
 import com.ws101.Ampuan.Comia.EcommerceApi.model.User;
 import com.ws101.Ampuan.Comia.EcommerceApi.repository.UserRepository;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -11,27 +13,26 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDto dto) {
+        // I-verify kung umiiral na ang username
+        if (userRepository.findByUsername(dto.username()).isPresent()) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // I-map ang DTO data papunta sa totoong User model object
+        User user = new User();
+        user.setUsername(dto.username());
+        user.setPassword(passwordEncoder.encode(dto.password())); // Hashing
+        user.setRole(dto.role());
 
-        if (user.getRole() == null || user.getRole().isEmpty()) {
-            user.setRole("ROLE_USER");
-        }
-
-        User savedUser = userRepository.save(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        userRepository.save(user);
+        return ResponseEntity.ok("User registered successfully");
     }
 }

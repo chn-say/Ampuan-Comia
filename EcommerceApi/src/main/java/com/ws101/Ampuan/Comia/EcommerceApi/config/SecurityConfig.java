@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +14,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // TAMA: Idinagdag para gumana ang @PreAuthorize sa iyong Controller methods!
 public class SecurityConfig {
 
     @Bean
@@ -31,13 +33,17 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/script.js", "/style.css", "/*.jpg").permitAll()
+                        // Bukas para sa lahat ang mga static files at UI pages
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/script.js", "/style.css", "/auth-register.js", "/*.jpg").permitAll()
 
+                        // Bukas para sa lahat ang pagtingin sa mga sapatos at registration endpoint
                         .requestMatchers(HttpMethod.GET, "/api/v1/products").permitAll()
                         .requestMatchers("/api/v1/auth/register").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/products").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").authenticated()
+                        // INAYOS: Role-Based endpoint rules ayon sa Task 3 document requirements
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasRole("ADMIN") // Admin lang ang pwedeng magbura
+                        .requestMatchers(HttpMethod.POST, "/api/v1/orders").authenticated() // User-specific: Dapat authenticated para makapag-order
 
                         .anyRequest().authenticated()
                 )
